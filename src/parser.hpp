@@ -95,18 +95,65 @@ namespace client { namespace parser {
 
 
   struct name_class;
+  struct expr_class;
   struct attribute_class;
   struct simple_selector_class;
 
   x3::rule<name_class, std::string> const name = "name";
+  x3::rule<expr_class, std::string> const expr = "expr";
   x3::rule<attribute_class, ast::attribute> const attribute = "attribute";
   x3::rule<simple_selector_class, ast::simple_selector> const simple_selector = "employee";
 
 
+  int n_br_open;
+  struct _n_br_open{};
+
+  auto init_bracket = [](auto& ctx) {
+    //Rcpp::Rcout << "init\n";
+    x3::get<_n_br_open>(ctx).get() = 0;
+  };
+  auto open_bracket = [](auto& ctx) {
+    //Rcpp::Rcout << "open\n";
+    x3::get<_n_br_open>(ctx).get()++;
+  };
+  auto close_bracket = [](auto& ctx) {
+    //Rcpp::Rcout << "close\n";
+    int& i = x3::get<_n_br_open>(ctx).get();
+    if (i-1 < 0) {
+      x3::_pass(ctx) = false;
+    } else {
+      i--;
+    }
+  };
+  auto end_bracket = [](auto& ctx) {
+    //Rcpp::Rcout << "end\n";
+    if (x3::get<_n_br_open>(ctx).get() != 0) {
+      x3::_pass(ctx) = false;
+    }
+  };
+
+  // This needs to be complicated here because we want to allow our
+  // expressions to contain brackets.
+  //
+  // Solution based on https://stackoverflow.com/questions/33624149/boost-spirit-x3-cannot-compile-repeat-directive-with-variable-factor/33627991#33627991
+  // %= weirdness is from https://stackoverflow.com/questions/33929849/boost-spirit-x3-ast-not-working-with-semantic-actions-when-using-separate-rule-d/33937139#33937139
+  //
+  auto expr_def = x3::rule<struct expr_def, std::string> {}
+               %= x3::with<_n_br_open>(std::ref(n_br_open)) [(
+                  x3::eps[init_bracket]  >>
+                  x3::raw[ x3::lexeme[
+                    *(
+                      char_('[')[open_bracket]  |
+                      char_(']')[close_bracket] |
+                      (char_ - char_("[]"))
+                    )
+                  ] ] >>
+                  x3::eps[end_bracket]
+                  )];
+
   // A syntactically valid name consists of letters, numbers and the dot or underline
   // characters and starts with a letter or the dot not followed by a number. Names such as
   // ".2way" are not valid, and neither are the reserved words.
-
   auto const name_def = x3::raw[ x3::lexeme[ (
     ( char_("A-Za-z") >> *char_("._A-Za-z0-9") ) |
       ( char_(".") >> !char_("0-9") >> *char_("._A-Za-z0-9") ) |
@@ -116,7 +163,7 @@ namespace client { namespace parser {
   auto const attribute_def = (
     '[' >>
       name >>
-      x3::raw[x3::lexeme[ *(char_ - ']') ]] >>
+      expr >>
     ']'
   );
 
@@ -128,9 +175,10 @@ namespace client { namespace parser {
 
   //auto const selectors = +simple_selector;
 
-  BOOST_SPIRIT_DEFINE(name, attribute, simple_selector);
+  BOOST_SPIRIT_DEFINE(name, expr, attribute, simple_selector);
 
   struct name_class {};
+  struct expr_class {};
   struct attribute_class {};//: x3::annotate_on_success {};
   struct simple_selector_class {};// : x3::annotate_on_success {};
 } }
