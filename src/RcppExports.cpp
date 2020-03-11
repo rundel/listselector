@@ -16,6 +16,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// check_expr_parser
+std::string check_expr_parser(std::string const& str);
+RcppExport SEXP _listselector_check_expr_parser(SEXP strSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string const& >::type str(strSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_expr_parser(str));
+    return rcpp_result_gen;
+END_RCPP
+}
 // check_attribute_parser
 Rcpp::List check_attribute_parser(std::string const& str);
 RcppExport SEXP _listselector_check_attribute_parser(SEXP strSEXP) {
@@ -38,11 +49,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test
+bool test(std::string const& str);
+RcppExport SEXP _listselector_test(SEXP strSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string const& >::type str(strSEXP);
+    rcpp_result_gen = Rcpp::wrap(test(str));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_listselector_check_name_parser", (DL_FUNC) &_listselector_check_name_parser, 1},
+    {"_listselector_check_expr_parser", (DL_FUNC) &_listselector_check_expr_parser, 1},
     {"_listselector_check_attribute_parser", (DL_FUNC) &_listselector_check_attribute_parser, 1},
     {"_listselector_check_simple_selector_parser", (DL_FUNC) &_listselector_check_simple_selector_parser, 1},
+    {"_listselector_test", (DL_FUNC) &_listselector_test, 1},
     {NULL, NULL, 0}
 };
 

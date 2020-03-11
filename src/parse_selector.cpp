@@ -26,6 +26,28 @@ std::string check_name_parser(std::string const& str) {
 }
 
 // [[Rcpp::export]]
+std::string check_expr_parser(std::string const& str) {
+  namespace x3 = boost::spirit::x3;
+
+  auto first = str.begin();
+  auto last = str.end();
+
+  std::string expr;
+
+  bool r = x3::phrase_parse(
+    first, last,
+    client::parser::expr,
+    x3::ascii::space,
+    expr
+  );
+
+  if (first != last || !r) // fail if we did not get a full match
+    Rcpp::stop("Failed to parse.");
+
+  return expr;
+}
+
+// [[Rcpp::export]]
 Rcpp::List check_attribute_parser(std::string const& str) {
   namespace x3 = boost::spirit::x3;
 

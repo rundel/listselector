@@ -5,11 +5,19 @@ check_name_parser <- function(str) {
     .Call(`_listselector_check_name_parser`, str)
 }
 
+check_expr_parser <- function(str) {
+    .Call(`_listselector_check_expr_parser`, str)
+}
+
 check_attribute_parser <- function(str) {
     .Call(`_listselector_check_attribute_parser`, str)
 }
 
 check_simple_selector_parser <- function(str) {
     .Call(`_listselector_check_simple_selector_parser`, str)
+}
+
+test <- function(str) {
+    .Call(`_listselector_test`, str)
 }
 
